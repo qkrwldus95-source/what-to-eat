@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘 뭐 먹지?</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    background: linear-gradient(145deg, #fff7ed, #fff1f2);
+    color: #292524;
+  }
+  .app {
+    width: min(92vw, 480px);
+    background: rgba(255,255,255,.94);
+    border: 1px solid #fed7aa;
+    border-radius: 28px;
+    padding: 28px 22px;
+    box-shadow: 0 20px 55px rgba(120, 53, 15, .12);
+    text-align: center;
+  }
+  .emoji { font-size: 54px; margin-bottom: 8px; }
+  h1 { margin: 0 0 8px; font-size: 30px; }
+  .sub { margin: 0 0 24px; color: #78716c; line-height: 1.55; }
+  .question {
+    font-size: 23px;
+    font-weight: 800;
+    line-height: 1.45;
+    margin: 18px 0 24px;
+  }
+  .buttons { display: grid; gap: 12px; }
+  button {
+    border: 0;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #fb923c;
+    color: white;
+    transition: transform .12s ease, opacity .12s ease;
+  }
+  button:hover { transform: translateY(-2px); }
+  button.secondary { background: #f5f5f4; color: #44403c; }
+  .result {
+    padding: 16px;
+    border-radius: 20px;
+    background: #fff7ed;
+    margin: 18px 0 20px;
+  }
+  .result .num { color: #9a3412; font-weight: 800; }
+  .result .name { font-size: 30px; font-weight: 900; margin: 8px 0; }
+  .result .desc { color: #78716c; }
+  .progress { font-size: 13px; color: #a8a29e; margin-top: 18px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main class="app">
+  <div id="start">
+    <div class="emoji">🍽️</div>
+    <h1>오늘 뭐 먹지?</h1>
+    <p class="sub">이사 전날 저녁 메뉴 결정기<br>생각 오래 하지 말고 끌리는 걸 눌러!</p>
+    <button onclick="show('q1')">메뉴 고르기 시작 🎮</button>
+  </div>
+
+  <section id="q1" class="hidden">
+    <div class="emoji">🤤</div>
+    <div class="question">따뜻한 국물이 땡기나요?</div>
+    <div class="buttons">
+      <button onclick="show('q2')">응! 국물 먹고 싶어 🍲</button>
+      <button class="secondary" onclick="show('q3')">아니! 국물 말고 👀</button>
+    </div>
+    <div class="progress">STEP 1</div>
+  </section>
+
+  <section id="q2" class="hidden">
+    <div class="emoji">🍲</div>
+    <div class="question">얼큰하고 진한 국물에<br>밥까지 먹고 싶나요?</div>
+    <div class="buttons">
+      <button onclick="result(4)">응, 찌개에 밥이지 🔥</button>
+      <button class="secondary" onclick="result(2)">아니, 면이 땡겨 🍜</button>
+    </div>
+    <div class="progress">STEP 2</div>
+  </section>
+
+  <section id="q3" class="hidden">
+    <div class="emoji">✨</div>
+    <div class="question">바삭하고 기름진 게 땡기나요?</div>
+    <div class="buttons">
+      <button onclick="show('q4')">응! 오늘은 기름진 거 😈</button>
+      <button class="secondary" onclick="result(3)">아니, 깔끔한 게 좋아 🍣</button>
+    </div>
+    <div class="progress">STEP 2</div>
+  </section>
+
+  <section id="q4" class="hidden">
+    <div class="emoji">🍗</div>
+    <div class="question">치킨 뜯는 게 더 땡겨요?<br>아니면 돈가스?</div>
+    <div class="buttons">
+      <button onclick="result(1)">치킨 뜯자!! 🍗</button>
+      <button class="secondary" onclick="result(5)">돈가스 + 냉면 🍖</button>
+    </div>
+    <div class="progress">FINAL</div>
+  </section>
+
+  <section id="result" class="hidden">
+    <div class="emoji" id="resultEmoji">🎉</div>
+    <h1>오늘 저녁 결정!</h1>
+    <div class="result">
+      <div class="num" id="resultNum"></div>
+      <div class="name" id="resultName"></div>
+      <div class="desc" id="resultDesc"></div>
+    </div>
+    <button onclick="restart()">다시 고르기 🔄</button>
+  </section>
+</main>
+
+<script>
+const restaurants = {
+  1: { name: "오부장치킨", emoji: "🍗", desc: "오늘은 바삭한 치킨 뜯고 빠르게 복귀!" },
+  2: { name: "명동칼국수", emoji: "🍜", desc: "뜨끈한 국물에 면 한 그릇 하고 정리하러 가자." },
+  3: { name: "소라노스시", emoji: "🍣", desc: "깔끔하게 초밥 먹고 배부름 적당히!" },
+  4: { name: "명동찌개마을", emoji: "🍲", desc: "얼큰한 찌개 + 밥으로 든든하게 충전!" },
+  5: { name: "왕돈가스 왕냉면", emoji: "🍖", desc: "바삭한 돈가스에 냉면까지. 오늘의 탄수화물 파티!" }
+};
+
+function show(id) {
+  document.querySelectorAll("main > div, main > section").forEach(el => el.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function result(n) {
+  const r = restaurants[n];
+  document.getElementById("resultEmoji").textContent = r.emoji;
+  document.getElementById("resultNum").textContent = n + "번 당첨 🎯";
+  document.getElementById("resultName").textContent = r.name;
+  document.getElementById("resultDesc").textContent = r.desc;
+  show("result");
+}
+
+function restart() {
+  show("start");
+}
+</script>
+</body>
+</html>
